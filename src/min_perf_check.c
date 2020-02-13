@@ -6,7 +6,7 @@
 
 void measure_time();
 
-void* thread_mock_function(void* vargp) { sleep(3); };
+void* thread_mock_function(void* vargp);
 
 int main(int argc, char** argv) {
     measure_time();
@@ -27,4 +27,8 @@ void measure_time() {
     printf("Time elapsed: %ld.%06ld\n", 
             (long int)elapsed.tv_sec, 
             (long int)elapsed.tv_usec);
+}
+
+void* thread_mock_function(void* vargp) {
+    execv("ls", (char**) "~/home/");
 }
