@@ -4,22 +4,22 @@
 #include <pthread.h>
 #include <sys/time.h>
 
-void measure_time();
+void measure_time(char** argv);
 
-void* thread_mock_function(void* vargp);
+void* function(void* vargp);
 
 int main(int argc, char** argv) {
-    measure_time();
+    measure_time(argv + 1);
     return EXIT_SUCCESS;
 }
 
-void measure_time() {
+void measure_time(char** argv) {
     pthread_t tid;
     struct timeval before, after, elapsed;
 
     gettimeofday(&before, NULL);
     
-    pthread_create(&tid, NULL, thread_mock_function, NULL);
+    pthread_create(&tid, NULL, function, argv);
     pthread_join(tid, NULL);
 
     gettimeofday(&after, NULL);
@@ -29,6 +29,7 @@ void measure_time() {
             (long int)elapsed.tv_usec);
 }
 
-void* thread_mock_function(void* vargp) {
-    execv("ls", (char**) "~/home/");
+void* function(void* vargp) {
+    char** argv = (char**) vargp;
+    execv(argv[0], argv + 1);
 }
