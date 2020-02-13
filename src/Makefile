@@ -3,6 +3,7 @@ CC=gcc
 
 SRC_IMPL=$(wildcard *.c)
 OBJ_IMPL=$(patsubst %.c, %.o, $(SRC_IMPL))
+LFLAGS=-lpthread
 
 EXEC=min_perf_check
 
