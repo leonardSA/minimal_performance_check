@@ -10,9 +10,9 @@
 
 void measure_time(char** argv);
 
-void measure_entry(char* entry_file);
+void measure_entry(char* executable, char* entry_file);
 
-char** read_entry(char* entry);
+char** read_entry(char* executable, char* entry);
 
 void* function(void* vargp);
 
@@ -21,11 +21,12 @@ int main(int argc, char** argv) {
         fprintf(stderr, "min_perf_check PATH_TO_EXECUTABLE ENTRIES\n");
         exit(EXIT_FAILURE);
     }
+    measure_entry(argv[1], argv[2]);
     return EXIT_SUCCESS;
 }
 
 
-void measure_entry(char* entry_file) {
+void measure_entry(char* executable, char* entry_file) {
     FILE* fp = NULL;
     char* line = NULL; 
     size_t len = 0;
@@ -37,10 +38,8 @@ void measure_entry(char* entry_file) {
     }
 
     while (getline(&line, &len, fp) != EOF) {
-        char** argv = read_entry(line);
-        for (int i = 0 ; argv[i] != NULL ; i++)
-            printf("%s ", argv[i]);
-        printf("\n");
+        char** argv = read_entry(executable, line);
+        measure_time(argv);
         free(argv);
     }
 
@@ -48,12 +47,13 @@ void measure_entry(char* entry_file) {
     if (line) free(line);
 }
 
-char** read_entry(char* entry) {
+char** read_entry(char* executable, char* entry) {
     char* arg = NULL;
-    char** entries = (char**) malloc(sizeof(char*) * MAX_ARGS);
+    char** entries = (char**) malloc(sizeof(char*) * (MAX_ARGS + 1));
+    entries[0] = executable;
 
     strtok(entry, "\n");
-    int i = 0;
+    int i = 1;
     for (arg = strtok(entry, DEL_ARGS) ; arg != NULL ; 
             arg = strtok(NULL, DEL_ARGS), i++) {
         entries[i] = arg;
