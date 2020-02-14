@@ -7,26 +7,27 @@
 
 #define MAX_ARGS 16
 #define DEL_ARGS ","
+#define RES_FILE "./data.dat"
 
-void measure_time(char** argv);
+void measure_time(char** argv, int x_axis);
 
-void measure_entry(char* executable, char* entry_file);
+void measure_entry(char* executable, char* entry_file, int x_axis);
 
 char** read_entry(char* executable, char* entry);
 
 void* function(void* vargp);
 
 int main(int argc, char** argv) {
-    if (argc != 3) {
-        fprintf(stderr, "min_perf_check PATH_TO_EXECUTABLE ENTRIES\n");
+    if (argc != 4) {
+        fprintf(stderr, "min_perf_check PATH_TO_EXECUTABLE ENTRIES X_AXIS_NB\n");
         exit(EXIT_FAILURE);
     }
-    measure_entry(argv[1], argv[2]);
+    measure_entry(argv[1], argv[2], atoi(argv[3]));
     return EXIT_SUCCESS;
 }
 
 
-void measure_entry(char* executable, char* entry_file) {
+void measure_entry(char* executable, char* entry_file, int x_axis) {
     FILE* fp = NULL;
     char* line = NULL; 
     size_t len = 0;
@@ -39,7 +40,7 @@ void measure_entry(char* executable, char* entry_file) {
 
     while (getline(&line, &len, fp) != EOF) {
         char** argv = read_entry(executable, line);
-        measure_time(argv);
+        measure_time(argv, x_axis);
         free(argv);
     }
 
@@ -63,7 +64,13 @@ char** read_entry(char* executable, char* entry) {
     return entries;
 }
 
-void measure_time(char** argv) {
+void measure_time(char** argv, int x_axis) {
+    FILE* fp = fopen(RES_FILE, "a");
+    if (fp == NULL) {
+        fprintf(stderr, "FAILURE: Could not open %s\n", RES_FILE);
+        exit(EXIT_FAILURE);
+    }
+
     pthread_t tid;
     struct timeval before, after, elapsed;
 
@@ -74,9 +81,11 @@ void measure_time(char** argv) {
 
     gettimeofday(&after, NULL);
     timersub(&after, &before, &elapsed);
-    printf("Time elapsed: %ld.%06ld\n", 
+    fprintf(fp, "%s\t%ld.%06ld\n", 
+            argv[x_axis],
             (long int)elapsed.tv_sec, 
             (long int)elapsed.tv_usec);
+    fclose(fp);
 }
 
 void* function(void* vargp) {
