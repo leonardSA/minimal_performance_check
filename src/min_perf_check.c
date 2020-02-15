@@ -4,6 +4,8 @@
 #include <pthread.h>
 #include <string.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define MAX_ARGS 16
 #define DEL_ARGS ","
@@ -72,15 +74,13 @@ void measure_time(char** argv, int x_axis) {
     }
 
     pthread_t tid;
-    struct timeval before, after, elapsed;
+    void* status;
+    struct timeval elapsed;
 
-    gettimeofday(&before, NULL);
-    
     pthread_create(&tid, NULL, function, argv);
-    pthread_join(tid, NULL);
+    pthread_join(tid, &status);
+    elapsed = *(struct timeval*) status;
 
-    gettimeofday(&after, NULL);
-    timersub(&after, &before, &elapsed);
     fprintf(fp, "%s\t%ld.%06ld\n", 
             argv[x_axis],
             (long int)elapsed.tv_sec, 
@@ -89,6 +89,29 @@ void measure_time(char** argv, int x_axis) {
 }
 
 void* function(void* vargp) {
-    char** argv = (char**) vargp;
-    execv(argv[0], argv + 1);
+    struct timeval before, after;
+    int fd[2];
+    int status = 0;
+    char** argv;
+
+    argv = (char**) vargp;
+    pipe(fd);
+    pid_t pid = fork();
+    if (pid == 0) {
+        close(fd[0]);
+        gettimeofday(&before, NULL);
+        write(fd[1], &before, sizeof(struct timeval));
+        close(fd[1]);
+        execv(argv[0], argv);
+        fprintf(stderr, "execv for %s failed\n", argv[0]);
+    } else {
+        struct timeval* elapsed = (struct timeval*) malloc(sizeof(struct timeval));
+        close(fd[1]);
+        wait(&status);
+        gettimeofday(&after, NULL);
+        read(fd[0], &before, sizeof(struct timeval));
+        close(fd[0]);
+        timersub(&after, &before, elapsed);
+        return (void *) elapsed;
+    }
 }
