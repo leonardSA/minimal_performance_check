@@ -24,11 +24,14 @@ void* function(void* vargp);
 
 void gnuplot_print();
 
+void clean_dir();
+
 int main(int argc, char** argv) {
     if (argc != 4) {
         fprintf(stderr, "min_perf_check PATH_TO_EXECUTABLE ENTRIES X_AXIS_NB\n");
         exit(EXIT_FAILURE);
     }
+    clean_dir();
     measure_entry(argv[1], argv[2], atoi(argv[3]));
     gnuplot_print();
     return EXIT_SUCCESS;
@@ -142,4 +145,10 @@ void gnuplot_print() {
     char cmd[GPLOT_CMD_LEN] = "gnuplot ";
     strcat(cmd, GPLOT_CMD_FILE);
     system(cmd);
+}
+
+void clean_dir() {
+    remove(RES_FILE);
+    remove(GPLOT_CMD_FILE);
+    remove(GPLOT_RES_FILE);
 }
