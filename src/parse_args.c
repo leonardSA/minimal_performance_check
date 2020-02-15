@@ -32,7 +32,7 @@ struct Arguments parse_arguments(int argc, char** argv) {
     int c = 0;
     while (c != -1) {
         int option_index = 0;
-        c = getopt_long(argc, argv, "he:v:x:n:t", options, &option_index);
+        c = getopt_long(argc, argv, "he:v:x:n:t:", options, &option_index);
         switch (c) {
             case 'h':
                 print_help(argv[0]);

@@ -6,6 +6,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "parse_args.h"
 
 #define MAX_ARGS 16
 #define DEL_ARGS ","
@@ -16,7 +17,7 @@
 
 void measure_time(char** argv, int x_axis);
 
-void measure_entry(char* executable, char* entry_file, int x_axis);
+void measure_entry(struct Arguments* args);
 
 char** read_entry(char* executable, char* entry);
 
@@ -27,31 +28,28 @@ void gnuplot_print();
 void clean_dir();
 
 int main(int argc, char** argv) {
-    if (argc != 4) {
-        fprintf(stderr, "min_perf_check PATH_TO_EXECUTABLE ENTRIES X_AXIS_NB\n");
-        exit(EXIT_FAILURE);
-    }
+    struct Arguments args = parse_arguments(argc, argv);
     clean_dir();
-    measure_entry(argv[1], argv[2], atoi(argv[3]));
+    measure_entry(&args);
     gnuplot_print();
     return EXIT_SUCCESS;
 }
 
 
-void measure_entry(char* executable, char* entry_file, int x_axis) {
+void measure_entry(struct Arguments* args) {
     FILE* fp = NULL;
     char* line = NULL; 
     size_t len = 0;
 
-    fp = fopen(entry_file, "r");
+    fp = fopen(args->entries, "r");
     if (fp == NULL) {
-        fprintf(stderr, "FAILURE: Could not open %s\n", entry_file);
+        fprintf(stderr, "FAILURE: Could not open %s\n", args->entries);
         exit(EXIT_FAILURE);
     }
 
     while (getline(&line, &len, fp) != EOF) {
-        char** argv = read_entry(executable, line);
-        measure_time(argv, x_axis);
+        char** argv = read_entry(args->executable, line);
+        measure_time(argv, args->x_axis_column);
         free(argv);
     }
 
