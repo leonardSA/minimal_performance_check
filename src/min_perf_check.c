@@ -10,6 +10,9 @@
 #define MAX_ARGS 16
 #define DEL_ARGS ","
 #define RES_FILE "./data.dat"
+#define GPLOT_CMD_FILE "./gnuplot_cmd"
+#define GPLOT_RES_FILE "./graph.svg"
+#define GPLOT_CMD_LEN   255
 
 void measure_time(char** argv, int x_axis);
 
@@ -19,12 +22,15 @@ char** read_entry(char* executable, char* entry);
 
 void* function(void* vargp);
 
+void gnuplot_print();
+
 int main(int argc, char** argv) {
     if (argc != 4) {
         fprintf(stderr, "min_perf_check PATH_TO_EXECUTABLE ENTRIES X_AXIS_NB\n");
         exit(EXIT_FAILURE);
     }
     measure_entry(argv[1], argv[2], atoi(argv[3]));
+    gnuplot_print();
     return EXIT_SUCCESS;
 }
 
@@ -114,4 +120,26 @@ void* function(void* vargp) {
         timersub(&after, &before, elapsed);
         return (void *) elapsed;
     }
+}
+
+
+void gnuplot_print() {
+    FILE* fp = fopen(GPLOT_CMD_FILE, "w");
+    if (fp == NULL) {
+        fprintf(stderr, "FAILURE: Could not open %s\n", RES_FILE);
+        exit(EXIT_FAILURE);
+    }
+
+    fprintf(fp, "set terminal svg\n");
+    fprintf(fp, "set output \"%s\"\n", GPLOT_RES_FILE);
+    fprintf(fp, "unset key\n");
+    fprintf(fp, "set grid\n");
+    fprintf(fp, "set ylabel \"Time in seconds\"\n");
+    fprintf(fp, "plot \"%s\" lt 7 lc 0 w l\n", RES_FILE);
+
+    fclose(fp);
+
+    char cmd[GPLOT_CMD_LEN] = "gnuplot ";
+    strcat(cmd, GPLOT_CMD_FILE);
+    system(cmd);
 }
