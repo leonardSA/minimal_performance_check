@@ -8,12 +8,52 @@
 #include <sys/wait.h>
 #include "measure_time.h"
 
+/* =============================
+ * PRIVATE FUNCTIONS PROTOTYPES
+ * ============================= */
 
+/**
+ * @brief Measures the time for one entry.
+ * 
+ * Measures time for an entry and writes the resulting info in a file.
+ *
+ * @param argv      program to execute with parameters
+ * @param x_axis    column of entry file to be considered as x axis
+ */
 static void measure_entry(char** argv, int x_axis);
 
+/**
+ * @brief Reads an entry.
+ *
+ * Takes a given entry line and adds each parameter to a list.
+ * This list is strings starting with the executable's path followed by 
+ * the parameters and terminated with a NULL.
+ *
+ * @param executable    path to executable
+ * @param entry         an entry line 
+ *
+ * @return list of strings to be executed
+ */
 static char** read_entry(char* executable, char* entry);
 
+/**
+ * @brief Executes a program and returns the time it took.
+ *
+ * Function to be executed in a thread. 
+ * It will fork on itself in order to execute the program 
+ * using its argument vargp and measure the time its child takes 
+ * to then return it.
+ *
+ * @param vargp expects an argv to execute with execv.
+ *
+ * @return struct timeval of elapsed time
+ */
 static void* execute_program(void* vargp);
+
+
+/* ================
+ * PUBLIC FUNCTIONS
+ * ================ */
 
 void measure_time(struct Arguments* args) {
     FILE* fp = NULL;
@@ -36,6 +76,9 @@ void measure_time(struct Arguments* args) {
     if (line) free(line);
 }
 
+/* =================
+ * PRIVATE FUNCTIONS
+ * ================= */
 
 static void measure_entry(char** argv, int x_axis) {
     FILE* fp = fopen(RES_FILE, "a");
