@@ -7,8 +7,19 @@
 #define GPLOT_RES_FILE  "./graph.svg"
 #define GPLOT_CMD_LEN   255
 
+/**
+ * @brief Makes a graph out of data.
+ *
+ * Creates a file in which gnuplot commands are written 
+ * and executes it with system.
+ *
+ * @param args
+ */
 void gnuplot_print(struct Arguments* args);
 
+/**
+ * @brief Cleans the directory.
+ */
 void clean_dir();
 
 int main(int argc, char** argv) {
