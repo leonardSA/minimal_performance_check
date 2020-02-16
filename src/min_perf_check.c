@@ -23,7 +23,7 @@ char** read_entry(char* executable, char* entry);
 
 void* function(void* vargp);
 
-void gnuplot_print();
+void gnuplot_print(struct Arguments* args);
 
 void clean_dir();
 
@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     struct Arguments args = parse_arguments(argc, argv);
     clean_dir();
     measure_entry(&args);
-    gnuplot_print();
+    gnuplot_print(&args);
     return EXIT_SUCCESS;
 }
 
@@ -124,7 +124,7 @@ void* function(void* vargp) {
 }
 
 
-void gnuplot_print() {
+void gnuplot_print(struct Arguments* args) {
     FILE* fp = fopen(GPLOT_CMD_FILE, "w");
     if (fp == NULL) {
         fprintf(stderr, "FAILURE: Could not open %s\n", RES_FILE);
@@ -136,6 +136,12 @@ void gnuplot_print() {
     fprintf(fp, "unset key\n");
     fprintf(fp, "set grid\n");
     fprintf(fp, "set ylabel \"Time in seconds\"\n");
+
+    if (args->title != NULL)
+        fprintf(fp, "set title \"%s\"\n", args->title);
+    if (args->x_axis_name != NULL)
+        fprintf(fp, "set xlabel \"%s\"\n", args->x_axis_name);
+
     fprintf(fp, "plot \"%s\" lt 7 lc 0 w l\n", RES_FILE);
 
     fclose(fp);
