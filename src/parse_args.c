@@ -6,17 +6,59 @@
 #include <string.h>
 #include "parse_args.h"
 
+/* =============================
+ * PRIVATE FUNCTIONS PROTOTYPES
+ * ============================= */
+
+/**
+ * @brief Validates arguments.
+ *
+ * Set args->status to ARGS_NOK if an error was found.
+ *
+ * @param args
+ */
 static void check_arguments(struct Arguments* args);
 
+/**
+ * @brief Verifies the entries argument.
+ *
+ * @param entries
+ *
+ * @return ARGS_NOK if error found else ARGS_OK
+ */
 static int check_entries(char* entries);
 
+/**
+ * @brief Verifies the executable argument.
+ *
+ * @param executable
+ *
+ * @return ARGS_NOK if error found else ARGS_OK
+ */
 static int check_executable(char* executable);
 
+/**
+ * @brief Verifies the x axis column argument.
+ *
+ * Uses the entries file to verify if given column is not out of bounds.
+ *
+ * @param column    given column by user
+ * @param entries   entries file
+ *
+ * @return ARGS_NOK if error found else ARGS_OK
+ */
 static int check_x_axis_column(int column, char* entries);
 
-void print_help(char* exec) {
-    fprintf(stdout, USAGE, exec);
-}
+/**
+ * @brief Prints help message and exits.
+ *
+ * @param exec  name of executable
+ */
+static void print_help(char* exec);
+
+/* ================
+ * PUBLIC FUNCTIONS
+ * ================ */
 
 struct Arguments parse_arguments(int argc, char** argv) {
     struct Arguments args;
@@ -87,6 +129,9 @@ struct Arguments parse_arguments(int argc, char** argv) {
     return args;
 }
 
+/* =================
+ * PRIVATE FUNCTIONS
+ * ================= */
 
 static void check_arguments(struct Arguments* args) {
     if (check_x_axis_column(args->x_axis_column, args->entries) == ARGS_NOK) {
@@ -123,6 +168,7 @@ static int check_entries(char* entries) {
     return ARGS_OK;
 }
 
+
 static int check_executable(char* executable) {
     if (executable == NULL)
         return ARGS_NOK;
@@ -153,3 +199,7 @@ static int check_x_axis_column(int column, char* entries) {
     return ARGS_OK;
 }
 
+
+static void print_help(char* exec) {
+    fprintf(stdout, USAGE, exec);
+}

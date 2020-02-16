@@ -29,8 +29,16 @@ struct Arguments {
     int status;
 };
 
-void print_help(char* exec);
-
+/**
+ * @brief Parses arguments and returns them as a struct Arguments.
+ *
+ * Exits if arguments are misgiven.
+ *
+ * @param argc
+ * @param argv
+ *
+ * @return a struct Arguments containing argument's values
+ */
 struct Arguments parse_arguments(int argc, char** argv);
 
 
