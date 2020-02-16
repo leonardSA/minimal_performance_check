@@ -4,6 +4,7 @@
 #define MAX_ARG_LEN 255
 #define ARGS_OK     0
 #define ARGS_NOK    1
+#define DEL_ARGS    ","
 
 #define USAGE "\
 Usage: %s [OPTION] EXECUTABLE ENTRIES X_AXIS_COLUMN\n\

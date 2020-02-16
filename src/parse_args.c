@@ -1,9 +1,18 @@
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <getopt.h>
 #include <string.h>
 #include "parse_args.h"
+
+static void check_arguments(struct Arguments* args);
+
+static int check_entries(char* entries);
+
+static int check_executable(char* executable);
+
+static int check_x_axis_column(int column, char* entries);
 
 void print_help(char* exec) {
     fprintf(stdout, USAGE, exec);
@@ -69,13 +78,78 @@ struct Arguments parse_arguments(int argc, char** argv) {
         }
     }
 
-    if (args.status != ARGS_OK 
-            || args.x_axis_column == 0 
-            || args.entries == NULL
-            || args.executable == NULL) {
-        fprintf(stderr, "Error in arguments\n");
+    check_arguments(&args);
+    if (args.status != ARGS_OK) {
+        fprintf(stderr, "ERRORS FOUND IN ARGUMENTS\n");
         exit(EXIT_FAILURE);
     }
 
     return args;
 }
+
+
+static void check_arguments(struct Arguments* args) {
+    if (check_x_axis_column(args->x_axis_column, args->entries) == ARGS_NOK) {
+        fprintf(stderr, 
+                "An error was found for the column number argument for one of the following reasons:\n\
+                - the argument is missing\n\
+                - the number given is out of bounds\n");
+        args->status = ARGS_NOK;
+    }
+    if (check_entries(args->entries) == ARGS_NOK) {
+        fprintf(stderr, 
+                "An error was found for the entries argument for one the following reasons:\n\
+                - the argument is missing\n\
+                - the file cannot be accessed\n\
+                - the file cannot be read\n");
+        args->status = ARGS_NOK;
+    }
+    if (check_executable(args->executable) == ARGS_NOK) {
+        fprintf(stderr, 
+                "An error was found for the executable argument for one of the following reasons:\n\
+                - the argument is missing\n\
+                - the file cannot be accessed\n\
+                - the file cannot be executed\n");
+        args->status = ARGS_NOK;
+    }
+}
+
+
+static int check_entries(char* entries) {
+    if (entries == NULL)
+        return ARGS_NOK;
+    if (access(entries, R_OK) == -1)
+        return ARGS_NOK;
+    return ARGS_OK;
+}
+
+static int check_executable(char* executable) {
+    if (executable == NULL)
+        return ARGS_NOK;
+    if (access(executable, X_OK) == -1)
+        return ARGS_NOK;
+    return ARGS_OK;
+}
+
+
+static int check_x_axis_column(int column, char* entries) {
+    if (column == 0)
+        return ARGS_NOK;
+
+    FILE* fp = fopen(entries, "r");
+    char* line = NULL;
+    size_t len = 0;
+
+    if (fp == NULL)
+        return ARGS_NOK;
+    if (getline(&line, &len, fp) == EOF || line == NULL)
+        return ARGS_NOK;
+    for (int i = 0 ; i < len ; i++) {
+        if (line[i] == DEL_ARGS[0]) // Delimiter is a string
+            column--;
+    }
+    if (column != 1)
+        return ARGS_NOK;
+    return ARGS_OK;
+}
+
