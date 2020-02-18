@@ -1,10 +1,14 @@
 OUT_DIR=output
 SRC_DIR=src
+TEST_DIR=test
 EXEC=min_perf_check
 
-.PHONY: output
+.PHONY: output test
 
 all: compile
+
+test: compile
+	make test -C $(TEST_DIR)
 
 compile: output
 	make -C $(SRC_DIR)
@@ -14,4 +18,5 @@ output:
 
 clean:
 	make clean -C $(SRC_DIR)
+	make clean -C $(TEST_DIR)
 	rm -rf $(OUT_DIR)
