@@ -194,7 +194,7 @@ static int check_x_axis_column(int column, char* entries) {
         if (line[i] == DEL_ARGS[0]) // Delimiter is a string
             column--;
     }
-    if (column != 1)
+    if (column > 1)
         return ARGS_NOK;
     return ARGS_OK;
 }
