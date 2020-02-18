@@ -14,7 +14,7 @@ TEST_EXEC=min_perf_check
 
 test: output copy $(EXEC) move 
 	cd $(OUT_DIR) ;\
-	./$(TEST_EXEC) -e $(EXEC) -v $(ENTRIES) -x 1
+	./$(TEST_EXEC) -e $(EXEC) -v $(ENTRIES) -x 1 -t "Fast solution" -n "Number of elements in array"
 
 $(EXEC): $(OBJ_IMPL)  
 	$(CC) $(OBJ_IMPL) $(LFLAGS) -o $(EXEC)
