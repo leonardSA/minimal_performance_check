@@ -7,7 +7,7 @@ EXEC=min_perf_check
 
 all: compile
 
-test:
+test: compile
 	make test -C $(TEST_DIR)
 
 compile: output
