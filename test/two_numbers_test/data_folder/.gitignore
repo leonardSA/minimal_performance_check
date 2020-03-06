@@ -1,2 +1,4 @@
 # ignore data files (too heavy)
 *.dat
+gen_random_ints
+entries.txt
