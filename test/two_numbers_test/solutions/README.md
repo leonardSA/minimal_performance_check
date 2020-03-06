@@ -33,9 +33,11 @@ their index as the value. Then, for every key in the hashmap, we compute the
 complement (= target - key) and search for the complement in the hashmap.
 
 First version of the fast solution (explanation below).
+
 ![](./results/range1000/fast.svg)
 
 Second version of the fast solution.
+
 ![](./results/range1000/fast_revisited.svg)
 
 
