@@ -12,8 +12,6 @@ In order to make it work, a few things are required:
 - gcc
 - gnuplot (for outputing the graphs)
 
-Also note that the program uses **threads** (actually only one for now).
-
 ### Input and output
 
 The program requires a file with data in `CVS format` to be passed as an argument
@@ -48,23 +46,21 @@ All these *make commands* are to be executed at the root of the project.
 |--x-axis-column V  | -x V          | Specify column by which to create the x axis (count starts with 1).   | Yes       |
 |--title V          | -t V          | Give a title to the outputed graph.                                   |           |
 |--x-axis-name V    | -n V          | Add legend to the x axis.                                             |           |
+|--parallel V       | -p V          | Use V threads (speedup process).                                      |           |
 
 ## Examples
 
-Here are 3 graphs outputed by the `two_numbers_test` in the test folder.  
-As you can see, the supposedly fast solution (best algorithm) turned out slow 
-most likely because of the abundance of dynamically allocated memory compared 
-to the other (notably the brute force solution).  
-However, I have yet to determine if it is the actual cause or not.
+Example of outputed graphs:
 
-![alt text](./resources/two_nums_brute_force_solution.svg "Brute force solution graph")
-![alt text](./resources/two_nums_slow_solution.svg "Slow solution graph")
-![alt text](./resources/two_nums_fast_solution.svg "Fast solution graph")
+![](./resources/two_nums_brute_force_solution.svg "Brute force solution graph")
+![](./resources/two_nums_fast_solution.svg "Fast solution graph")
+
+More examples can be found in the [two numbers test documentation](test/two_numbers_test/solutions/README.md) 
+and the [threads test documentation](test/threads_test/README.md).
 
 ## Todo list
 
-- [ ] Understand why the slow solution performed better than the fast one (see examples).
+- [x] Understand why the slow solution performed better than the fast one (see examples).
 - [ ] Add options for output format and file.
-- [ ] Add option for reading/writing binary data.
-- [ ] Multithreading and option for using more than one thread.
+- [x] Multithreading and option for using more than one thread.
 - [ ] Add a y axis.
