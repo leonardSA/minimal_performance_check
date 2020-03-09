@@ -25,6 +25,7 @@ Time taken for --parallel 4: 0m6.346s
 ```
 
 Here are the obtained graphs for each:
+
 ![](./results/p1_graph.svg)
 ![](./results/p2_graph.svg)
 ![](./results/p3_graph.svg)
