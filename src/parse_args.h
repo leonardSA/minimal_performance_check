@@ -12,9 +12,10 @@ Usage: %s [OPTION] EXECUTABLE ENTRIES X_AXIS_COLUMN\n\
 Required arguments:\n\
 --executable, -e STRING         Path to executable file.\n\
 --entries, -v STRING            File containing the values for the executable (cvs format).\n\
---x-axis-column, -x STRING      Column number of entries (starting with 1) to be used as the x axis values.\n\
+--x-axis-column, -x NUMBER      Column number of entries (starting with 1) to be used as the x axis values.\n\
 \n\
 Optional arguments:\n\
+--parallel, -p NUMBER           Use multiple threads.\n\
 --help, -h                      Shows this help message and exits.\n\
 --x-axis-name, -n STRING        Names the x axis.\n\
 --title, -t STRING              Gives a title to the graph.\n\
@@ -26,6 +27,7 @@ struct Arguments {
     char* x_axis_name;
     int x_axis_column;
     char* title;
+    int threads;
     int status;
 };
 
