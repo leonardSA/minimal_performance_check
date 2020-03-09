@@ -69,6 +69,7 @@ struct Arguments parse_arguments(int argc, char** argv) {
     args.x_axis_name = NULL;
     args.x_axis_column = 0;
     args.title = NULL;
+    args.threads = 1;
     args.status = ARGS_OK;
 
     struct option options[] = {
@@ -77,13 +78,14 @@ struct Arguments parse_arguments(int argc, char** argv) {
         {"entries",         required_argument,  0, 'v'},
         {"x-axis-column",   required_argument,  0, 'x'},
         {"x-axis-name",     required_argument,  0, 'n'},
-        {"title",           required_argument,  0, 't'}
+        {"title",           required_argument,  0, 't'},
+        {"parallel",        required_argument,  0, 'p'}
     };
 
     int c = 0;
     while (c != -1) {
         int option_index = 0;
-        c = getopt_long(argc, argv, "he:v:x:n:t:", options, &option_index);
+        c = getopt_long(argc, argv, "he:v:x:n:t:p:", options, &option_index);
         switch (c) {
             case 'h':
                 print_help(argv[0]);
@@ -114,6 +116,10 @@ struct Arguments parse_arguments(int argc, char** argv) {
                 strncpy(args.title, optarg, MAX_ARG_LEN);
                 break;
 
+            case 'p':
+                args.threads = atoi(optarg);
+                break;
+
             case '?':
                 args.status = ARGS_NOK;
                 break;
@@ -134,27 +140,17 @@ struct Arguments parse_arguments(int argc, char** argv) {
  * ================= */
 
 static void check_arguments(struct Arguments* args) {
+    char error_msg[] = "An error was found for the column number argument for one of the following reasons:\n\
+                - the argument is missing\n\
+                - the number given is out of bounds\n";
     if (check_x_axis_column(args->x_axis_column, args->entries) == ARGS_NOK) {
-        fprintf(stderr, 
-                "An error was found for the column number argument for one of the following reasons:\n\
-                - the argument is missing\n\
-                - the number given is out of bounds\n");
+        fprintf(stderr, error_msg);
         args->status = ARGS_NOK;
-    }
-    if (check_entries(args->entries) == ARGS_NOK) {
-        fprintf(stderr, 
-                "An error was found for the entries argument for one the following reasons:\n\
-                - the argument is missing\n\
-                - the file cannot be accessed\n\
-                - the file cannot be read\n");
+    } else if (check_entries(args->entries) == ARGS_NOK) {
+        fprintf(stderr, error_msg);
         args->status = ARGS_NOK;
-    }
-    if (check_executable(args->executable) == ARGS_NOK) {
-        fprintf(stderr, 
-                "An error was found for the executable argument for one of the following reasons:\n\
-                - the argument is missing\n\
-                - the file cannot be accessed\n\
-                - the file cannot be executed\n");
+    } else if (check_executable(args->executable) == ARGS_NOK) {
+        fprintf(stderr, error_msg);
         args->status = ARGS_NOK;
     }
 }

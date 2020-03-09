@@ -13,14 +13,13 @@
  * ============================= */
 
 /**
- * @brief Measures the time for one entry.
- * 
- * Measures time for an entry and writes the resulting info in a file.
+ * @brief Measures the time for threads entries.
  *
- * @param argv      program to execute with parameters
+ * @param argvs     parameters with which to execute the programs (threads)
  * @param x_axis    column of entry file to be considered as x axis
+ * @param threads   number of threads/programs to execute
  */
-static void measure_entry(char** argv, int x_axis);
+static void measure_entries(char*** argvs, int x_axis, int threads);
 
 /**
  * @brief Reads an entry.
@@ -57,7 +56,8 @@ static void* execute_program(void* vargp);
 
 void measure_time(struct Arguments* args) {
     FILE* fp = NULL;
-    char* line = NULL; 
+    char* lines[args->threads];
+    char** argvs[args->threads];
     size_t len = 0;
 
     fp = fopen(args->entries, "r");
@@ -66,41 +66,61 @@ void measure_time(struct Arguments* args) {
         exit(EXIT_FAILURE);
     }
 
-    while (getline(&line, &len, fp) != EOF) {
-        char** argv = read_entry(args->executable, line);
-        measure_entry(argv, args->x_axis_column);
-        free(argv);
+    int done_reading = 0;
+    while (!done_reading) {
+        for (int i = 0 ; i < args->threads ; i++) {
+            if (getline(&lines[i], &len, fp) == EOF)
+                done_reading = 1;
+            if (!done_reading)
+                argvs[i] = read_entry(args->executable, lines[i]);
+            else
+                argvs[i] = NULL;
+        }
+        measure_entries(argvs, args->x_axis_column, args->threads);
+        for (int i = 0 ; i < args->threads ; i++) {
+            if (argvs[i]) free(argvs[i]);
+        }
     }
 
     fclose(fp);
-    if (line) free(line);
+    for (int i = 0 ; i < args->threads ; i++)
+        free(lines[i]);
 }
 
 /* =================
  * PRIVATE FUNCTIONS
  * ================= */
 
-static void measure_entry(char** argv, int x_axis) {
+static void measure_entries(char*** argvs, int x_axis, int threads) {
     FILE* fp = fopen(RES_FILE, "a");
     if (fp == NULL) {
         fprintf(stderr, "FAILURE: Could not open %s\n", RES_FILE);
         exit(EXIT_FAILURE);
     }
 
-    pthread_t tid;
-    void* status;
-    struct timeval elapsed;
+    pthread_t tids[threads];
+    void* status[threads]; 
 
-    pthread_create(&tid, NULL, execute_program, argv);
-    pthread_join(tid, &status);
-    elapsed = *(struct timeval*) status;
+    /* create threads */
+    for (int i = 0 ; i < threads ; i++) {
+        if (argvs[i] == NULL) continue;
+        pthread_create(&(tids[i]), NULL, execute_program, argvs[i]);
+    }
 
-    fprintf(fp, "%s\t%ld.%06ld\n", 
-            argv[x_axis],
-            (long int)elapsed.tv_sec, 
-            (long int)elapsed.tv_usec);
+    /* join threads */
+    for (int i = 0 ; i < threads ; i++) {
+        if (argvs[i] == NULL) continue; 
+
+        struct timeval elapsed;
+        pthread_join(tids[i], &(status[i]));
+        elapsed = *(struct timeval*) status[i];
+        fprintf(fp, "%s\t%ld.%06ld\n", 
+                argvs[i][x_axis],
+                (long int)elapsed.tv_sec, 
+                (long int)elapsed.tv_usec);
+    }
+
     fclose(fp);
-
 }
 
 
@@ -139,7 +159,7 @@ static void* execute_program(void* vargp) {
     } else {
         struct timeval* elapsed = (struct timeval*) malloc(sizeof(struct timeval));
         close(fd[1]);
-        wait(&status);
+        waitpid(pid, &status, WUNTRACED | WCONTINUED);
         gettimeofday(&after, NULL);
         read(fd[0], &before, sizeof(struct timeval));
         close(fd[0]);
